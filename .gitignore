@@ -1,7 +1,35 @@
-/build
-/out
-/.vs
-/.vscode
+# =========================
+# JUCE / Projucer
+# =========================
+**/Builds/**
+*.jucer.user
+*.jucer_cache
+
+# =========================
+# Visual Studio
+# =========================
+.vs/
+*.suo
+*.user
+*.VC.db
+*.opensdf
+*.sdf
+*.ipch
+*.pdb
+
+# =========================
+# Build outputs
+# =========================
+build/
+out/
 *.obj
 *.exe
 *.dll
+*.lib
+
+# =========================
+# Editors / OS
+# =========================
+.vscode/
+.DS_Store
+Thumbs.db
