@@ -4,7 +4,7 @@
 **/Builds/**
 *.jucer.user
 *.jucer_cache
-
+**/JuceLibraryCode/**
 # =========================
 # Visual Studio
 # =========================
