@@ -11,21 +11,50 @@
 
 //==============================================================================
 Aap_eqAudioProcessor::Aap_eqAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
+    : AudioProcessor(BusesProperties()
+#if ! JucePlugin_IsMidiEffect
+#if ! JucePlugin_IsSynth
+        .withInput("Input", juce::AudioChannelSet::stereo(), true)
 #endif
+        .withOutput("Output", juce::AudioChannelSet::stereo(), true)
+#endif
+    ),
+    apvts(*this, nullptr, "Parameters", createParameterLayout())
 {
 }
 
-Aap_eqAudioProcessor::~Aap_eqAudioProcessor()
+
+Aap_eqAudioProcessor::~Aap_eqAudioProcessor() {}
+
+//==============================================================================
+// PARAMETER LAYOUT
+juce::AudioProcessorValueTreeState::ParameterLayout
+Aap_eqAudioProcessor::createParameterLayout()
 {
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "BASS", 1 },
+        "Bass",
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f),
+        0.0f
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "MID", 1 },
+        "Mid",
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f),
+        0.0f
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        juce::ParameterID{ "TREBLE", 1 },
+        "Treble",
+        juce::NormalisableRange<float>(-12.0f, 12.0f, 0.01f),
+        0.0f
+    ));
+
+    return { params.begin(), params.end() };
 }
 
 //==============================================================================
@@ -36,29 +65,29 @@ const juce::String Aap_eqAudioProcessor::getName() const
 
 bool Aap_eqAudioProcessor::acceptsMidi() const
 {
-   #if JucePlugin_WantsMidiInput
+#if JucePlugin_WantsMidiInput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool Aap_eqAudioProcessor::producesMidi() const
 {
-   #if JucePlugin_ProducesMidiOutput
+#if JucePlugin_ProducesMidiOutput
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 bool Aap_eqAudioProcessor::isMidiEffect() const
 {
-   #if JucePlugin_IsMidiEffect
+#if JucePlugin_IsMidiEffect
     return true;
-   #else
+#else
     return false;
-   #endif
+#endif
 }
 
 double Aap_eqAudioProcessor::getTailLengthSeconds() const
@@ -66,125 +95,93 @@ double Aap_eqAudioProcessor::getTailLengthSeconds() const
     return 0.0;
 }
 
-int Aap_eqAudioProcessor::getNumPrograms()
-{
-    return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
-                // so this should be at least 1, even if you're not really implementing programs.
-}
-
-int Aap_eqAudioProcessor::getCurrentProgram()
-{
-    return 0;
-}
-
-void Aap_eqAudioProcessor::setCurrentProgram (int index)
-{
-}
-
-const juce::String Aap_eqAudioProcessor::getProgramName (int index)
-{
-    return {};
-}
-
-void Aap_eqAudioProcessor::changeProgramName (int index, const juce::String& newName)
-{
-}
+//==============================================================================
+int Aap_eqAudioProcessor::getNumPrograms() { return 1; }
+int Aap_eqAudioProcessor::getCurrentProgram() { return 0; }
+void Aap_eqAudioProcessor::setCurrentProgram(int) {}
+const juce::String Aap_eqAudioProcessor::getProgramName(int) { return {}; }
+void Aap_eqAudioProcessor::changeProgramName(int, const juce::String&) {}
 
 //==============================================================================
-void Aap_eqAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void Aap_eqAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    juce::ignoreUnused(sampleRate, samplesPerBlock);
 }
 
-void Aap_eqAudioProcessor::releaseResources()
-{
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
-}
+void Aap_eqAudioProcessor::releaseResources() {}
 
+//==============================================================================
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool Aap_eqAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool Aap_eqAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 {
-  #if JucePlugin_IsMidiEffect
-    juce::ignoreUnused (layouts);
+#if JucePlugin_IsMidiEffect
+    juce::ignoreUnused(layouts);
     return true;
-  #else
-    // This is the place where you check if the layout is supported.
-    // In this template code we only support mono or stereo.
-    // Some plugin hosts, such as certain GarageBand versions, will only
-    // load plugins that support stereo bus layouts.
+#else
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-     && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
-    // This checks if the input layout matches the output layout
-   #if ! JucePlugin_IsSynth
+#if ! JucePlugin_IsSynth
     if (layouts.getMainOutputChannelSet() != layouts.getMainInputChannelSet())
         return false;
-   #endif
+#endif
 
     return true;
-  #endif
+#endif
 }
 #endif
 
-void Aap_eqAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+//==============================================================================
+void Aap_eqAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer,
+    juce::MidiBuffer& midiMessages)
 {
+    juce::ignoreUnused(midiMessages);
+
     juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
+    auto totalNumInputChannels = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+        buffer.clear(i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
+    // ====== PARAMETER READ (FOR NEXT STEP) ======
+    auto bass = apvts.getRawParameterValue("BASS")->load();
+    auto mid = apvts.getRawParameterValue("MID")->load();
+    auto treble = apvts.getRawParameterValue("TREBLE")->load();
 
-        // ..do something to the data...
-    }
+    juce::ignoreUnused(bass, mid, treble);
 }
 
 //==============================================================================
 bool Aap_eqAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* Aap_eqAudioProcessor::createEditor()
 {
-    return new Aap_eqAudioProcessorEditor (*this);
+    return new Aap_eqAudioProcessorEditor(*this);
 }
 
 //==============================================================================
-void Aap_eqAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void Aap_eqAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto state = apvts.copyState();
+    std::unique_ptr<juce::XmlElement> xml(state.createXml());
+    copyXmlToBinary(*xml, destData);
 }
 
-void Aap_eqAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void Aap_eqAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<juce::XmlElement> xml(getXmlFromBinary(data, sizeInBytes));
+
+    if (xml && xml->hasTagName(apvts.state.getType()))
+        apvts.replaceState(juce::ValueTree::fromXml(*xml));
 }
 
 //==============================================================================
-// This creates new instances of the plugin..
+// This creates new instances of the plugin
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new Aap_eqAudioProcessor();

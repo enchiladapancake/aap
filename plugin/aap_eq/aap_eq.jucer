@@ -6,7 +6,7 @@
               pluginFormats="buildVST3" pluginChannelConfigs="1-1, 2-2" pluginName="AAP EQ"
               pluginDesc="Three-band EQ with gain and experimental character control."
               pluginManufacturer="Team Audio" pluginManufacturerCode="TAud"
-              pluginCode="AEQ1" pluginVST3Category="EQ,Fx" userNotes=" ">
+              pluginCode="AEQ1" pluginVST3Category="EQ,Fx" userNotes=" " companyEmail="mylo@teamaud.io">
   <MAINGROUP id="Fcb22O" name="aap_eq">
     <GROUP id="{6729F2F4-D745-0F58-9090-4CB6548BA4E3}" name="Source">
       <FILE id="wmFwwG" name="PluginProcessor.cpp" compile="1" resource="0"
